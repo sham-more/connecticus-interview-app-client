@@ -8,7 +8,7 @@ import { Slide } from "@mui/material";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 
-// Image 
+// Image for question
 import bgImage from "assets/images/illustrations/illustration-reset.png";
 import instructionImg from "../../assets/images/instruction.png"
 
