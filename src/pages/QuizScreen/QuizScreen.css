@@ -1,0 +1,115 @@
+/* QuizScreen.css */
+
+.custom-radio {
+    display: flex;
+    gap: 2;
+    margin-bottom: 10px;
+}
+
+.custom-radio input {
+    opacity: 0;
+    cursor: pointer;
+}
+
+.custom-radio label {
+    position: relative;
+    padding-left: 30px;
+    /* Space for the outline */
+    cursor: pointer;
+}
+
+.custom-radio label:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    /* Adjust the width of the outline */
+    height: 20px;
+    margin-top: 6.5px;
+    /* Adjust the height of the outline */
+    border: 1.4px solid #2196F3;
+    /* Outline color */
+    border-radius: 25%;
+    box-sizing: border-box;
+}
+
+.custom-radio input:checked+label:before {
+    background-color: #2195f3;
+    /* Fill color when checked */
+    border: 1.5px solid #0990ff;
+}
+
+.glassEffect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+}
+
+.instruction_container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+
+
+}
+
+.instructions {
+    display: flex;
+    width: 75%;
+    gap: 30px;
+    height: 70%;
+    margin-top: -20px;
+    margin-right: 10px;
+    background-color: white;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    padding: 30px;
+    /* flex-wrap: wrap; */
+    border-radius: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
+.instruction_img {
+    width: 450px;
+    height: 310px;
+    border-radius: 10px;
+
+}
+
+.instruction_text {
+    margin-top: -30px;
+}
+
+.exam_div {
+    display: flex;
+    gap: 20px;
+    border: 1px solid rebeccapurple;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.select_sub {
+    padding: 10px;
+    width: 150px;
+    outline: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    text-align: center;
+}
+
+.select_sub:hover {
+    color: white;
+}
+
+.start_quiz {
+    width: 300px;
+    height: 50px;
+
+}
