@@ -8,9 +8,8 @@ import MKTypography from "components/MKTypography";
 import MKInput from "components/MKInput";
 import MKButton from "components/MKButton";
 import bgImage from "assets/images/bg-basic.jpeg";
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { red } from '@mui/material/colors';
 
 function SignUp() {
   const navigate = useNavigate();
@@ -59,13 +58,14 @@ function SignUp() {
 
   const handleSignUp = async () => {
     try {
+
       // Validate form before making the API call
       if (!validateForm()) {
         return;
       }
 
-      // API call code remains the same
-      const response = await fetch('http://localhost:8080/api/v1/auth/register', {
+
+      const response = await fetch('http://localhost:9090/api/v1/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,13 +79,16 @@ function SignUp() {
       });
 
       if (response.ok) {
-        // Successfully registered
+
         const userData = await response.json();
 
-        // Stores the token in local storage (if applicable)
-        localStorage.setItem('token', userData.token);
 
-        // Display success toast
+        // Stores the token in local storage
+        localStorage.setItem('token', userData.token);
+        localStorage.setItem("email", userData.email);
+        localStorage.setItem("firstName", userData.firstName);
+
+        //Successfully registered
         toast.success('Registration successful!', {
           position: "bottom-left",
           autoClose: 4000,
@@ -99,11 +102,10 @@ function SignUp() {
 
 
 
-        // Redirect to the desired page
+        // Redirect to the SignIn page
         navigate('/sign-in');
       } else {
-        // Handle registration failure (show error message)
-        console.error('Registration failed');
+
 
         // Display error toast when user already present
         toast.error('user already exist!', {
@@ -118,11 +120,16 @@ function SignUp() {
         });
       }
     } catch (error) {
-      console.error('Error during registration:', error);
+
 
       // Display error toast
       toast.error('Error during registration. Please try again later.');
     }
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault(); // Prevents the default form submission behavior
+    handleSignUp();
   };
 
   return (
@@ -166,7 +173,7 @@ function SignUp() {
                 </MKTypography>
               </MKBox>
               <MKBox pt={1} pb={3} px={3}>
-                <MKBox component="form" role="form">
+                <MKBox component="form" role="form" onSubmit={handleFormSubmit}>
                   <MKBox mb={2} mt={3} position="relative">
                     <MKInput
                       type="text"
@@ -272,10 +279,6 @@ function SignUp() {
         </Grid>
       </MKBox>
 
-      {/* Toast container */}
-      <ToastContainer
-
-      />
     </>
   );
 }

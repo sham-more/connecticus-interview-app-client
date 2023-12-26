@@ -10,7 +10,7 @@ import MKInput from "components/MKInput";
 import MKButton from "components/MKButton";
 import bgImage from "assets/images/bg-basic.jpeg";
 import { useAuth } from 'contex/AuthContext';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -51,7 +51,9 @@ function SignIn() {
     return Object.keys(errors).length === 0; // Return true if no errors
   };
 
-  const handleSetRememberMe = () => setRememberMe(!rememberMe);
+  // const handleSetRememberMe = () => setRememberMe(!rememberMe);
+
+
 
   const handleSignIn = async () => {
     try {
@@ -59,7 +61,7 @@ function SignIn() {
       if (!validateForm()) {
         return;
       }
-      const response = await fetch('http://localhost:8080/api/v1/auth/login', {
+      const response = await fetch('http://localhost:9090/api/v1/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,15 +85,23 @@ function SignIn() {
             user: userData.user,
             token: userData.token,
             role: userData.role,
+            email: userData.email,
+            firstName: userData.firstName,
           },
         });
+
+
+
+
 
         // Redirect based on the user role
 
 
         if (userData.role === 'ADMIN') {
           navigate('/admin/dashboard');
+
         } else if (userData.role === 'USER') {
+
           navigate('/user/profile');
         } else {
 
@@ -99,9 +109,10 @@ function SignIn() {
 
           console.error('Unknown user role');
         }
+
         toast.success('Login successful!', {
           position: "bottom-left",
-          autoClose: 2000,
+          autoClose: 1000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -109,11 +120,11 @@ function SignIn() {
           progress: undefined,
           theme: "light",
         });
+
       } else {
 
         // Handle authentication failure (showes error message)
 
-        console.error('Authentication failed');
         toast.error('Invalid credentials!', {
           position: "bottom-left",
           autoClose: 2000,
@@ -127,7 +138,7 @@ function SignIn() {
       }
 
     } catch (error) {
-      console.error('Error during authentication:', error);
+
       toast.error('Error during authentication,try again!', {
         position: "bottom-left",
         autoClose: 2000,
@@ -139,6 +150,11 @@ function SignIn() {
         theme: "light",
       });
     }
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault(); // Prevents the default form submission behavior
+
   };
 
 
@@ -183,7 +199,7 @@ function SignIn() {
 
               </MKBox>
               <MKBox pt={4} pb={3} px={3}>
-                <MKBox component="form" role="form" >
+                <MKBox component="form" role="form" onSubmit={handleFormSubmit} >
                   <MKBox mb={2} position="relative">
                     <MKInput type="email" label="Email" value={email} fullWidth onChange={(e) => setEmail(e.target.value)} error={formErrors.email} />
 
@@ -229,7 +245,7 @@ function SignIn() {
                   </MKBox> */}
 
                   <MKBox mt={4} mb={1}>
-                    <MKButton variant="gradient" color="info" fullWidth onClick={handleSignIn}>
+                    <MKButton variant="gradient" type="submit" color="info" fullWidth onClick={handleSignIn}>
                       Get Started
                     </MKButton>
                   </MKBox>
@@ -256,8 +272,7 @@ function SignIn() {
           </Grid>
         </Grid>
       </MKBox>
-      {/* Toast container */}
-      <ToastContainer />
+
     </>
   );
 }

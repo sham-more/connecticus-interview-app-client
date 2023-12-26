@@ -6,6 +6,7 @@ import UserProfile from "./pages/Dashboard/UserProfile";
 import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 import Unauthorized from "./pages/Unauthorized";
 import SignUp from "pages/SignUp";
+import NotFoundPage from "pages/NotFoundPage";
 
 const routes = [
   {
@@ -44,10 +45,16 @@ const routes = [
     roles: "ADMIN"
 
   },
+
   {
     name: "Unauthorized",
     route: "/unauthorized",
     component: Unauthorized,
+  },
+  {
+    name: "Not Found",
+    route: "/pagenotfound",
+    component: NotFoundPage,
   },
 ];
 

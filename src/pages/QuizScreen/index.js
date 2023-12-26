@@ -31,14 +31,18 @@ function QuizScreen() {
 
   useEffect(() => {
 
+
+
     // Fetch subjects from the API
 
     const fetchSubjects = async () => {
       try {
-        const response = await fetch("http://localhost:8080/question/subjects", {
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:9090/question/subjects", {
           method: "GET",
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
 
 
           },
@@ -50,11 +54,12 @@ function QuizScreen() {
           throw new Error('Network response was not ok');
         }
 
+
+
         const data = await response.json();
         setSubjects(data);
-        console.log(data);
       } catch (error) {
-        console.error('Error fetching subjects:', error);
+        alert("Error fetching subjects");
         setError(error);
       }
     };
@@ -64,10 +69,13 @@ function QuizScreen() {
 
   const fetchQuestions = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/question/subject/${selectedSubject}/10`, {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:9090/question/subject/${selectedSubject}/10`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+
         },
       });
 
@@ -80,7 +88,7 @@ function QuizScreen() {
       setLoading(false);
       setShowInstructions(false);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      alert("Error fetching data");
       setError(error);
       setLoading(false);
     }
@@ -103,11 +111,13 @@ function QuizScreen() {
   const handleStartQuiz = async () => {
     try {
       setLoading(true);
-
-      const response = await fetch("http://localhost:8080/exam/get", {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:9090/exam/get", {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+
         },
       });
 
@@ -116,7 +126,7 @@ function QuizScreen() {
       }
 
       const data = await response.json();
-      console.log(data);
+
 
       // Update the state with the new quiz data
 
@@ -125,7 +135,7 @@ function QuizScreen() {
       setShowInstructions(false);
 
     } catch (error) {
-      console.error('Error fetching data:', error);
+      alert("Error fetching data")
       setError(error);
       setLoading(false);
     }
@@ -137,13 +147,13 @@ function QuizScreen() {
   // HandleNext() for changing question
 
   const handleNext = () => {
-    // Check if the user has selected an option for the current question
+    // Checks if the user has selected an option for the current question
     if (isOptionSelected) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-      setIsOptionSelected(false); // Reset to false for the next question
+      setIsOptionSelected(false); // Resets to false for the next question
     } else {
-      // Display an error message or handle the case where no option is selected
-      console.log("Please choose an option before proceeding.");
+      // Displays an error
+      alert("Please choose an option before proceeding.");
     }
   };
 
@@ -165,7 +175,7 @@ function QuizScreen() {
   };
 
 
-  // ------------SHOW INSTRUCTION HTML---------
+  // ------------SHOW INSTRUCTION SCREEN ---------
 
   if (showInstructions) {
     return (
