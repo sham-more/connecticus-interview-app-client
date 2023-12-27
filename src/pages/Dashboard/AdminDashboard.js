@@ -129,7 +129,7 @@ const AdminDashboard = () => {
                     style={{
                         margin: '24px 16px',
                         padding: 24,
-                        minHeight: 'calc(100vh - 112px)', // Adjusted to account for Header height
+                        minHeight: 'calc(100vh - 112px)',
                         fontSize: "18px",
                         background: colorBgContainer,
                         borderRadius: borderRadiusLG,

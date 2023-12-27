@@ -11,7 +11,13 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import PrivateRoute from './Routes/PrivateRoute';
 
+/**
+ * Author: Shyam More
+ * Organization: Connecticus Technologies
+ */
+
 const App = () => {
+
   const { pathname } = useLocation();
 
   useEffect(() => {
