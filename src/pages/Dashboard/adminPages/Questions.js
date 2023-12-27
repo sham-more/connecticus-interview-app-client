@@ -6,8 +6,8 @@ import axios from 'axios';
 const Questions = () => {
     const [tableData, setTableData] = useState([]);
     const [totalQuestions, setTotalQuestions] = useState(0);
-    const [loading, setLoading] = useState(true); // New state for loading indicator
-    const jwtToken = localStorage.getItem('token'); // Replace with your actual JWT token
+    const [loading, setLoading] = useState(true);
+    const jwtToken = localStorage.getItem('token');
 
     const fetchTotalQuestions = async () => {
         try {
@@ -18,6 +18,7 @@ const Questions = () => {
                 },
             });
             setTotalQuestions(response.data.totalElements);
+
         } catch (error) {
             console.error('Error fetching total questions:', error);
         }
@@ -43,16 +44,26 @@ const Questions = () => {
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
-            // Set loading to false after data is fetched, regardless of success or error
+
             setLoading(false);
         }
     };
 
+
     useEffect(() => {
         const fetchDataOnMount = async () => {
-            setLoading(true); // Set loading to true before fetching data
+            // Set loading to true initially
+            setLoading(true);
+
+
             await fetchTotalQuestions();
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             await fetchData();
+
+            setLoading(false);
+
         };
 
         fetchDataOnMount();
@@ -124,18 +135,18 @@ const Questions = () => {
 
     return (
         <div>
-            <div style={{ top: 10 }}>
+            <div style={{ top: 10, marginBottom: '20px' }}>
                 <Upload className="upload-list-inline"
 
                     {...props} >
                     <Button icon={<UploadOutlined />}>Upload</Button>
                 </Upload>
             </div>
-            {loading ? ( // Render Skeleton while loading
+            {loading ? ( // Renders Skeleton while loading
 
-                <Skeleton active />
+                <Skeleton active={!tableData.length} />
             ) : (
-                <Table style={{ marginTop: '20px' }} dataSource={tableData} columns={columns} />
+                <Table dataSource={tableData} columns={columns} />
             )}
         </div>
     );
