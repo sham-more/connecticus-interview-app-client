@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Divider, Form, Input, Modal, Popconfirm, Radio, Skeleton, Table } from 'antd';
+import { Button, Divider, Form, Input, Modal, Popconfirm, Radio, Select, Skeleton, Table } from 'antd';
 import { DeleteOutlined, EditOutlined, FormOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
+// for validating all fields
 const validateRequired = (rule, value, callback) => {
-    if (value <= 0) {
+    if (value < 0) {
         callback(`Value must be greater than 0 for ${rule.field}`);
     } else if (!value || value.trim() === '') {
         callback(`Please input ${rule.field}`);
@@ -13,23 +14,59 @@ const validateRequired = (rule, value, callback) => {
     }
 };
 
-const CollectionCreateForm = ({ open, onCreate, onUpdate, onCancel, initialValues }) => {
+// validation to cheeck easy + medium + hard = toatl
+const validateQuestions = (rule, value, dependencies) => {
+    const form = dependencies[0];
+    const questionCount = form.getFieldValue('questionCount');
+    const easyQuestions = form.getFieldValue('easyQuestions');
+    const mediumQuestions = form.getFieldValue('mediumQuestions');
+    const hardQuestions = form.getFieldValue('hardQuestions');
+
+    if (value && value < 0) {
+        return Promise.reject(`Value must be greater than 0 for ${rule.field}`);
+    } else if (Number(easyQuestions) + Number(mediumQuestions) + Number(hardQuestions) !== Number(questionCount)) {
+
+        // Clears the fields if there was an error and they are currently showing an error
+        form.setFields([
+            { name: 'easyQuestions', errors: [] },
+            { name: 'mediumQuestions', errors: [] },
+            { name: 'hardQuestions', errors: [] },
+        ]);
+
+        return Promise.reject(`Sum of easy, medium, and hard questions must equal to  ${questionCount}`);
+    } else {
+
+        // Resets the fields to clear any previous errors
+        form.setFields([
+            { name: 'easyQuestions', errors: [] },
+            { name: 'mediumQuestions', errors: [] },
+            { name: 'hardQuestions', errors: [] },
+        ]);
+
+        return Promise.resolve();
+
+    }
+};
+
+
+const CollectionCreateForm = ({ open, onCreate, onUpdate, onCancel, initialValues, subjects }) => {
     const [form] = Form.useForm();
-    const [showDifficultyQuestions, setShowDifficultyQuestions] = useState(false);
 
     useEffect(() => {
         form.setFieldsValue(initialValues);
-        setShowDifficultyQuestions(initialValues?.customDifficultyCount === 'yes');
     }, [form, initialValues]);
 
     return (
         <Modal
-            style={{ marginTop: "-110px", padding: "20px" }}
+            style={{ marginTop: "-110px", padding: "30px" }}
             visible={open}
             title={initialValues ? "Update Exam" : "Create Exam"}
-            okText={initialValues ? "Update" : "Create"}
+            okText={initialValues ? "Update Exam" : "Create Exam"}
             cancelText="Cancel"
-            onCancel={onCancel}
+            onCancel={() => {
+                form.resetFields();  // Reset form fields when the modal is canceled
+                onCancel();
+            }}
             onOk={() => {
                 form
                     .validateFields()
@@ -51,14 +88,17 @@ const CollectionCreateForm = ({ open, onCreate, onUpdate, onCancel, initialValue
                 layout="vertical"
                 name="form_in_modal"
                 style={{
-                    maxHeight: '480px',
+                    maxHeight: '400px',
                     overflowY: 'auto',
                     paddingLeft: '5px',
-                    paddingRight: '20px'
+                    paddingRight: '20px',
+                    paddingTop: "10px",
+                    paddingBottom: "10px"
                 }}
                 initialValues={{
                     modifier: 'public',
                 }}
+
             >
                 <Form.Item
                     name="examName"
@@ -74,12 +114,55 @@ const CollectionCreateForm = ({ open, onCreate, onUpdate, onCancel, initialValue
                 </Form.Item>
 
                 <Form.Item
-                    name="totalQuestions"
+                    name="questionCount"
                     label="Total Questions"
                     rules={[
                         {
                             required: true,
                             validator: validateRequired,
+
+                        },
+                    ]}
+                >
+                    <Input type="number" onChange={() => form.validateFields(['easyQuestions', 'mediumQuestions', 'hardQuestions'])} />
+                </Form.Item>
+
+                <Form.Item
+                    name="easyQuestions"
+                    label="Number of Easy Questions"
+                    rules={[
+                        {
+                            required: true,
+                            validator: (rule, value) => validateQuestions(rule, value, [form]),
+
+
+                        },
+                    ]}
+                >
+                    <Input type="number" />
+                </Form.Item>
+
+                <Form.Item
+                    name="mediumQuestions"
+                    label="Number of Medium Questions"
+                    rules={[
+                        {
+                            required: true,
+                            validator: (rule, value) => validateQuestions(rule, value, [form]),
+                        },
+                    ]}
+                >
+                    <Input type="number" />
+                </Form.Item>
+
+                <Form.Item
+                    name="hardQuestions"
+                    label="Number of Hard Questions"
+                    rules={[
+                        {
+
+                            required: true,
+                            validator: (rule, value) => validateQuestions(rule, value, [form]),
                         },
                     ]}
                 >
@@ -96,7 +179,13 @@ const CollectionCreateForm = ({ open, onCreate, onUpdate, onCancel, initialValue
                         },
                     ]}
                 >
-                    <Input />
+                    <Select>
+                        {subjects.map(subject => (
+                            <Select.Option key={subject} value={subject.name}>
+                                {subject.name}
+                            </Select.Option>
+                        ))}
+                    </Select>
                 </Form.Item>
 
                 <Form.Item
@@ -156,62 +245,6 @@ const CollectionCreateForm = ({ open, onCreate, onUpdate, onCancel, initialValue
                         <Radio value="inactive">Inactive</Radio>
                     </Radio.Group>
                 </Form.Item>
-
-                <Form.Item
-                    name="customDifficultyCount"
-                    label="Choose Difficulty Levels"
-                    rules={[
-                        {
-                            message: 'Please choose whether to include difficulty levels!',
-                        },
-                    ]}
-                >
-                    <Radio.Group onChange={(e) => setShowDifficultyQuestions(e.target.value === 'yes')}>
-                        <Radio value="yes">Yes</Radio>
-                        <Radio value="no">No</Radio>
-                    </Radio.Group>
-                </Form.Item>
-
-                {showDifficultyQuestions && (
-                    <>
-                        {/* Difficulty Level Questions */}
-                        <Form.Item
-                            name="easyQuestions"
-                            label="Number of Easy Questions"
-                            rules={[
-                                {
-                                    validator: validateRequired,
-                                },
-                            ]}
-                        >
-                            <Input type="number" />
-                        </Form.Item>
-
-                        <Form.Item
-                            name="mediumQuestions"
-                            label="Number of Medium Questions"
-                            rules={[
-                                {
-                                    validator: validateRequired,
-                                },
-                            ]}
-                        >
-                            <Input type="number" />
-                        </Form.Item>
-
-                        <Form.Item
-                            name="hardQuestions"
-                            label="Number of Hard Questions"
-                            rules={[
-                                {
-                                    validator: validateRequired,
-                                },
-                            ]}
-                        >
-                            <Input type="number" />
-                        </Form.Item>
-                    </>
-                )}
             </Form>
 
         </Modal>
@@ -223,7 +256,11 @@ const CreateExam = () => {
     const [loading, setLoading] = useState(false);
     const [examData, setExamData] = useState([]);
     const [selectedExam, setSelectedExam] = useState(null);
+    const [subjects, setSubjects] = useState([]);
+
     const jwtToken = localStorage.getItem('token');
+
+
 
     const handleUpdate = (record) => {
         setSelectedExam(record);
@@ -233,6 +270,27 @@ const CreateExam = () => {
         setSelectedExam(record);
 
     };
+
+    useEffect(() => {
+        const fetchSubjects = async () => {
+            try {
+                const response = await axios.get('http://localhost:9090/question/subjects', {
+                    headers: {
+                        Authorization: `Bearer ${jwtToken}`,
+                    },
+                });
+                if (response.status === 200) {
+                    setSubjects(response.data);
+                } else {
+                    console.error('Failed to fetch subjects from the API:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching subjects:', error);
+            }
+        };
+
+        fetchSubjects();
+    }, []);
 
 
     const fetchData = async () => {
@@ -258,15 +316,18 @@ const CreateExam = () => {
 
     const onCreate = async (values) => {
         try {
+
             values.status = values.status === 'active';
-            values.customDifficultyCount = values.customDifficultyCount === 'yes';
+            values.questionCount = Number(values.questionCount, 10);
+            values.easyQuestions = Number(values.easyQuestions, 10);
+            values.mediumQuestions = Number(values.mediumQuestions, 10);
+            values.hardQuestions = Number(values.hardQuestions, 10);
 
             const response = await axios.post('http://localhost:9090/exam/create', values, {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`,
                 },
             });
-
             await fetchData();
             setOpen(false);
         } catch (error) {
@@ -279,7 +340,7 @@ const CreateExam = () => {
         try {
 
             updatedValues.status = updatedValues.status === 'active';
-            updatedValues.customDifficultyCount = updatedValues.customDifficultyCount === 'yes';
+
 
             const response = await axios.put(`http://localhost:9090/exam/update/${selectedExam.id}`, updatedValues, {
                 headers: {
@@ -300,6 +361,8 @@ const CreateExam = () => {
             setSelectedExam(null);
         }
     };
+
+
     const onDelete = async () => {
         try {
             const response = await axios.delete(`http://localhost:9090/exam/delete/${selectedExam.id}`, {
@@ -328,9 +391,10 @@ const CreateExam = () => {
         fetchDataOnMount();
     }, []);
 
+
     const columns = [
         { title: 'Id', dataIndex: 'id', key: 'id' },
-        { title: 'Name', dataIndex: 'examName', key: 'title' },
+        { title: 'Name', dataIndex: 'examName', key: 'examName' },
         { title: 'Sub', dataIndex: 'subject', key: 'subject' },
         {
             title: 'Status',
@@ -348,7 +412,10 @@ const CreateExam = () => {
                 <span>{`${record.duration} ${record.timeUnit}`}</span>
             ),
         },
-        { title: 'Total Questions', dataIndex: 'questionCount', key: 'totalQuestions' },
+        { title: 'Total Questions', dataIndex: 'questionCount', key: 'questionCount' },
+        { title: 'Easy Questions', dataIndex: 'easyQuestions', key: 'easyQuestions' },
+        { title: 'Medium Questions', dataIndex: 'mediumQuestions', key: 'mediumQuestions' },
+        { title: 'Hard Questions', dataIndex: 'hardQuestions', key: 'hardQuestions' },
         {
             title: 'Actions',
             key: 'actions',
@@ -403,6 +470,7 @@ const CreateExam = () => {
                     setSelectedExam(null);
                 }}
                 initialValues={selectedExam}
+                subjects={subjects}
             />
 
             {loading ? (
