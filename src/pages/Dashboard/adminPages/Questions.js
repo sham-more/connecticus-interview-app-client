@@ -78,7 +78,7 @@ const Questions = () => {
             authorization: `Bearer ${jwtToken}`,
         },
 
-        showUploadList: true,
+        showUploadList: false,
         onChange(info) {
             if (info.file.status === 'done') {
                 fetchTotalQuestions().then(() => {
@@ -91,7 +91,7 @@ const Questions = () => {
 
 
             } else if (info.file.status === 'error') {
-                message.error(`${info.file.name} file upload failed.`);
+                message.error("Please select exel file!");
             }
         },
         progress: {
