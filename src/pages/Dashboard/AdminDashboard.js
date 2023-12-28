@@ -4,7 +4,6 @@ import CreateExam from './adminPages/CreateExam';
 import Users from './adminPages/Users';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contex/AuthContext';
-
 import 'react-toastify/dist/ReactToastify.css';
 import {
     MenuFoldOutlined,
@@ -13,7 +12,8 @@ import {
     FileTextOutlined,
     LogoutOutlined,
     TeamOutlined,
-    DashboardOutlined
+    DashboardOutlined,
+    DatabaseOutlined
 } from '@ant-design/icons';
 
 import { Layout, Menu, Button, theme } from 'antd';
@@ -78,18 +78,45 @@ const AdminDashboard = () => {
                 <Menu
                     theme="dark"
                     mode="inline"
-                    style={{ fontSize: "17px", padding: "3px 0px" }}
+
+                    style={{ fontSize: "15px", padding: "10px 5px" }}
                     defaultSelectedKeys={['1']}
                     onSelect={({ key }) => setSelectedSection(key)}
                 >
+                    <Button
+                        type="text"
+                        icon={collapsed
+                            ?
+                            <MenuUnfoldOutlined style={{ fontSize: '16px', color: 'white' }} theme="outlined" />
+                            : <MenuFoldOutlined style={{ fontSize: '16px', color: 'white' }} theme="outlined" />}
+
+                        onClick={() => setCollapsed(!collapsed)}
+                        style={{
+                            fontSize: '17px',
+                            width: 34,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            margin: "4px 17px",
+                            height: 24,
+                            color: "white",
+                            scrollBehavior: "smooth",
+
+
+                        }}
+                    />
+
+
+                    <hr />
+
                     <Menu.Item key="1" icon={<DashboardOutlined />}>
                         Dashboard
                     </Menu.Item>
-                    <Menu.Item key="2" icon={<FileTextOutlined />}>
-                        Questions
+                    <Menu.Item key="2" icon={<DatabaseOutlined />}>
+                        Exam Data
                     </Menu.Item>
                     <Menu.Item key="3" icon={<FormOutlined />}>
-                        Create Exam
+                        Exam
                     </Menu.Item>
                     <Menu.Item key="4" icon={<TeamOutlined />}>
                         Users
@@ -100,31 +127,24 @@ const AdminDashboard = () => {
                 </Menu>
             </Sider>
             <Layout>
+
+
                 <Header
                     style={{
                         padding: 0,
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "left",
+                        justifyContent: "center",
                         background: colorBgContainer,
                         overflow: 'hidden',
                     }}
                 >
-                    <Button
-                        type="text"
-                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                        onClick={() => setCollapsed(!collapsed)}
-                        style={{
-                            fontSize: '18px',
-                            width: 64,
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            height: 64,
-                        }}
-                    />
+
+                    {/* <h4>CTPL Admin Dashboard</h4> */}
 
                 </Header>
+
+
                 <Content
                     style={{
                         margin: '24px 16px',
