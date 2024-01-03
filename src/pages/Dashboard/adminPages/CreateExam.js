@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Divider, Form, Input, Modal, Popconfirm, Radio, Select, Skeleton, Table } from 'antd';
-import { DeleteOutlined, EditOutlined, FormOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Divider, Form, Input, Modal, Popconfirm, Radio, Select, Skeleton, Table, message } from 'antd';
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, FormOutlined } from '@ant-design/icons';
+import ChecklistIcon from '@mui/icons-material/Checklist';
 import axios from 'axios';
 
 // for validating all fields
@@ -79,7 +80,7 @@ const CollectionCreateForm = ({ open, onCreate, onUpdate, onCancel, initialValue
                         }
                     })
                     .catch((info) => {
-                        console.log('Validate Failed:', info);
+                        message.error('Validate Failed', [2]);
                     });
             }}
         >
@@ -256,7 +257,16 @@ const CreateExam = () => {
     const [loading, setLoading] = useState(false);
     const [examData, setExamData] = useState([]);
     const [selectedExam, setSelectedExam] = useState(null);
+    const [selectedExams, setSelectedExams] = useState([]);
+    const [selectAllVisible, setSelectAllVisible] = useState(false);
+
+    const [checkboxColumnVisible, setCheckboxColumnVisible] = useState(false);
+    const [isDeleteVisible, setIsDeleteVisible] = useState(false);
+
+
+
     const [subjects, setSubjects] = useState([]);
+
 
     const jwtToken = localStorage.getItem('token');
 
@@ -266,15 +276,81 @@ const CreateExam = () => {
         setSelectedExam(record);
         setOpen(true);
     };
-    const handleDelete = (record) => {
-        setSelectedExam(record);
 
+    const handleDelete = async (examsToDelete) => {
+        try {
+
+            if (!examsToDelete || examsToDelete.length === 0) {
+                message.error('No users selected for deletion.');
+                return;
+            }
+            const idList = Array.isArray(examsToDelete) ? examsToDelete.map(user => user.id) : [examsToDelete];
+
+
+
+            const response = await axios.delete('http://localhost:8080/exam/delete', {
+                headers: {
+                    Authorization: `Bearer ${jwtToken}`,
+                },
+                data: {
+                    idList: idList,
+                },
+            });
+
+            if (response.status === 200) {
+                message.success("Exam deleted successfully", [1.5])
+                await fetchData();
+                setExamData(prevExamData => prevExamData.filter(exam => !idList.includes(exam.id)));
+
+                setSelectedExams([]);
+                setSelectAllVisible(false);
+
+            } else {
+                message.error('Failed to delete exams:', [1.5], response.statusText);
+            }
+        } catch (error) {
+            console.error('Error deleting exams:', error);
+        }
     };
+
+    const changeExamStatus = async (examsToChangeStatus, status) => {
+        try {
+
+            if (!examsToChangeStatus || examsToChangeStatus.length === 0) {
+                message.error('No exams selected for update.');
+                return;
+            }
+            const idList = Array.isArray(examsToChangeStatus) ? examsToChangeStatus.map(exam => exam.id) : [examsToChangeStatus];
+
+
+            const response = await axios.post('http://localhost:8080/exam/changeStatus', {
+                idList: idList,
+                status: status,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${jwtToken}`,
+                },
+            });
+
+            if (response.status === 200) {
+                message.success('Exam status changed successfully:', [2]);
+                await fetchData();
+                setSelectedExams([]);
+                setSelectAllVisible(false);
+            } else {
+                message.error('Failed to change exam status:', [2]);
+            }
+        } catch (error) {
+            message.error('Error changing exam status:', [2]);
+        }
+    };
+
+
 
     useEffect(() => {
         const fetchSubjects = async () => {
             try {
-                const response = await axios.get('http://localhost:9090/question/subjects', {
+                const response = await axios.get('http://localhost:8080/question/subjects', {
                     headers: {
                         Authorization: `Bearer ${jwtToken}`,
                     },
@@ -296,7 +372,7 @@ const CreateExam = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:9090/exam/getActive', {
+            const response = await axios.get('http://localhost:8080/exam/getAll', {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`,
                 },
@@ -305,10 +381,10 @@ const CreateExam = () => {
             if (response.status === 200) {
                 setExamData(response.data);
             } else {
-                console.error('Failed to fetch data from the API:', response.statusText);
+                message.error('Failed to fetch data from the API', [2]);
             }
         } catch (error) {
-            console.error('Error fetching active exams:', error);
+            console.log('Error fetching active exams', [2]);
         } finally {
             setLoading(false);
         }
@@ -316,24 +392,33 @@ const CreateExam = () => {
 
     const onCreate = async (values) => {
         try {
-
             values.status = values.status === 'active';
             values.questionCount = Number(values.questionCount, 10);
-            values.easyQuestions = Number(values.easyQuestions, 10);
-            values.mediumQuestions = Number(values.mediumQuestions, 10);
-            values.hardQuestions = Number(values.hardQuestions, 10);
+            values.easyQuestions = Number(values.easyQuestions, 0);
+            values.mediumQuestions = Number(values.mediumQuestions, 0);
+            values.hardQuestions = Number(values.hardQuestions, 0);
 
-            const response = await axios.post('http://localhost:9090/exam/create', values, {
+            const response = await axios.post('http://localhost:8080/exam/create', values, {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`,
                 },
             });
-            await fetchData();
-            setOpen(false);
+
+            if (response.status === 200) {
+                // Successful response
+                message.success(`Exam Created Successfully`, [1.5]);
+                await fetchData();
+                setOpen(false);
+            } else {
+                // Unsuccessful response
+                message.error(`${response.data.message}`, [3]);
+            }
         } catch (error) {
-            console.error('Error creating exam:', error);
+            // Handle other errors, e.g., network issues
+            message.error(`${error.response.data.message}`, [3]);
         }
     };
+
 
 
     const onUpdate = async (updatedValues) => {
@@ -342,46 +427,25 @@ const CreateExam = () => {
             updatedValues.status = updatedValues.status === 'active';
 
 
-            const response = await axios.put(`http://localhost:9090/exam/update/${selectedExam.id}`, updatedValues, {
+            const response = await axios.put(`http://localhost:8080/exam/update/${selectedExam.id}`, updatedValues, {
                 headers: {
                     Authorization: `Bearer ${jwtToken}`,
                 },
             });
 
             if (response.status === 200) {
-                console.log('Exam updated successfully:', response.data);
+                message.success('Exam updated successfully:', [2]);
                 await fetchData();
             } else {
-                console.error('Failed to update exam:', response.statusText);
+                message.error('Failed to update exam:', [2]);
             }
         } catch (error) {
-            console.error('Error updating exam:', error);
+            message.error('Error updating exam:', [2]);
         } finally {
             setOpen(false);
             setSelectedExam(null);
         }
     };
-
-
-    const onDelete = async () => {
-        try {
-            const response = await axios.delete(`http://localhost:9090/exam/delete/${selectedExam.id}`, {
-                headers: {
-                    Authorization: `Bearer ${jwtToken}`,
-                },
-            });
-
-            if (response.status === 200) {
-                console.log('Exam deleted successfully:', response.data);
-                await fetchData();
-            } else {
-                console.error('Failed to delete exam:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Error deleting exam:', error);
-        }
-    };
-
 
     useEffect(() => {
         const fetchDataOnMount = async () => {
@@ -391,8 +455,56 @@ const CreateExam = () => {
         fetchDataOnMount();
     }, []);
 
+    const onSelectAllClick = () => {
+        setSelectAllVisible((prevVisible) => checkboxColumnVisible && !prevVisible);
+
+        setSelectedExams((prevSelectedExams) =>
+            prevSelectedExams.length === examData.length ? [] : [...examData]
+        );
+    };
+
+    const onExamSelectChange = (record) => {
+        setSelectedExams((prevSelectedExams) => {
+            const isSelected = prevSelectedExams.some((exam) => exam.id === record.id);
+            return isSelected
+                ? prevSelectedExams.filter((exam) => exam.id !== record.id)
+                : [...prevSelectedExams, record];
+        });
+    };
+
+    const clearSelectedExams = () => {
+        setSelectedExams([]);
+    };
+
+    const toggleCheckboxColumn = () => {
+        setCheckboxColumnVisible((prevVisible) => !prevVisible);
+
+        setIsDeleteVisible(!isDeleteVisible);
+        clearSelectedExams(); // Clear selected users when toggling checkbox column visibility
+    };
+
 
     const columns = [
+        checkboxColumnVisible
+            ? {
+                title: (
+                    <Checkbox
+                        indeterminate={selectedExams.length > 0 && selectedExams.length < examData.length}
+                        checked={selectedExams.length === examData.length}
+                        onChange={onSelectAllClick}
+                    />
+                ),
+                key: 'select',
+                responsive: ['md'],
+                render: (_, record) => (
+                    <Checkbox
+                        checked={selectedExams.some((exam) => exam.id === record.id)}
+                        onChange={() => onExamSelectChange(record)}
+
+                    />
+                ),
+            }
+            : null,
         { title: 'Id', dataIndex: 'id', key: 'id' },
         { title: 'Name', dataIndex: 'examName', key: 'examName' },
         { title: 'Sub', dataIndex: 'subject', key: 'subject' },
@@ -400,10 +512,13 @@ const CreateExam = () => {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
-            render: () => (
-                <span style={{ color: "#4BB543" }}>Active</span>
+            render: (text, record) => (
+                <span style={{ color: record.status === true ? "#4BB543" : "#FF0000" }}>
+                    {record.status === true ? 'Active' : 'Inactive'}
+                </span>
             ),
         },
+
         {
             title: 'Duration',
             dataIndex: 'duration',
@@ -413,9 +528,9 @@ const CreateExam = () => {
             ),
         },
         { title: 'Total Questions', dataIndex: 'questionCount', key: 'questionCount' },
-        { title: 'Easy Questions', dataIndex: 'easyQuestions', key: 'easyQuestions' },
-        { title: 'Medium Questions', dataIndex: 'mediumQuestions', key: 'mediumQuestions' },
-        { title: 'Hard Questions', dataIndex: 'hardQuestions', key: 'hardQuestions' },
+        // { title: 'Easy Questions', dataIndex: 'easyQuestions', key: 'easyQuestions' },
+        // { title: 'Medium Questions', dataIndex: 'mediumQuestions', key: 'mediumQuestions' },
+        // { title: 'Hard Questions', dataIndex: 'hardQuestions', key: 'hardQuestions' },
         {
             title: 'Actions',
             key: 'actions',
@@ -430,15 +545,11 @@ const CreateExam = () => {
 
                     <Popconfirm
                         title="Are you sure you want to delete this exam?"
-                        onConfirm={() => onDelete(record)}
+                        onConfirm={() => handleDelete(record.id)}
                         okText="Yes"
                         cancelText="No"
                     >
-                        <Button
-                            type="link"
-                            onClick={() => handleDelete(record)}
-                            icon={<DeleteOutlined />}
-                            style={{ color: 'red' }}
+                        <Button type="link" className='deleteInTable' icon={<DeleteOutlined />}
                         />
                     </Popconfirm>
 
@@ -449,16 +560,63 @@ const CreateExam = () => {
 
     return (
         <div>
-            <Button
-                onClick={() => {
-                    setSelectedExam(null);
-                    setOpen(true);
-                }}
-                style={{ marginBottom: "20px" }}
-                icon={<FormOutlined />}
-            >
-                Create
-            </Button>
+
+            <div style={{ display: "flex", gap: "20px", alignItems: "center", marginBottom: "15px" }}>
+
+
+                <Button
+                    onClick={() => {
+                        setSelectedExam(null);
+                        setOpen(true);
+                    }}
+
+                    icon={<FormOutlined />}
+                >
+                    Create
+                </Button>
+
+                <Button className='toggleForSelect' onClick={toggleCheckboxColumn}>
+
+                    <ChecklistIcon />
+
+                </Button>
+
+                {isDeleteVisible && (
+                    <>
+
+                        <Popconfirm
+                            title="Are you sure you want to delete the selected exams?"
+                            onConfirm={() => handleDelete(selectedExams)}
+
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Button type="link" icon={<DeleteOutlined />} className='checkDelete'  >
+                                Delete
+                            </Button>
+
+
+                        </Popconfirm>
+
+                        <Button type="link" icon={<CheckCircleOutlined />} className='checkActivate' onClick={() => changeExamStatus(selectedExams, true)} >
+                            Activate
+                        </Button>
+
+                        <Button type="link" icon={<CloseCircleOutlined />} className='checkDelete' onClick={() => changeExamStatus(selectedExams, false)}>
+                            Dectivate
+                        </Button>
+                    </>
+                )}
+
+
+
+            </div>
+
+
+
+
+
+
 
             <CollectionCreateForm
                 open={open}
@@ -478,8 +636,9 @@ const CreateExam = () => {
             ) : (
                 <Table
                     dataSource={examData}
-                    columns={columns}
+                    columns={columns.filter(Boolean)}
                     loading={loading}
+                    rowKey="id"
                     pagination={{ pageSize: 10 }}
                 />
             )}
