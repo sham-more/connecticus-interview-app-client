@@ -11,7 +11,7 @@ const Questions = () => {
 
     const fetchTotalQuestions = async () => {
         try {
-            const response = await axios.post('http://localhost:9090/question/all/0/20', {}, {
+            const response = await axios.post('http://localhost:8080/question/all/1/20', {}, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${jwtToken}`,
@@ -26,7 +26,7 @@ const Questions = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.post(`http://localhost:9090/question/all/0/${totalQuestions}`, {}, {
+            const response = await axios.post(`http://localhost:8080/question/all/0/${totalQuestions}`, {}, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${jwtToken}`,
@@ -58,7 +58,7 @@ const Questions = () => {
 
             await fetchTotalQuestions();
 
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             await fetchData();
 
@@ -73,7 +73,7 @@ const Questions = () => {
     const props = {
         name: 'file',
         listType: 'picture',
-        action: 'http://localhost:9090/question/upload',
+        action: 'http://localhost:8080/question/upload',
         headers: {
             authorization: `Bearer ${jwtToken}`,
         },
@@ -81,9 +81,14 @@ const Questions = () => {
         showUploadList: false,
         onChange(info) {
             if (info.file.status === 'done') {
-                fetchTotalQuestions().then(() => {
+                fetchTotalQuestions().then((as) => {
+                    setLoading(true);
+
                     fetchData();
-                    message.success(`${info.file.name} file uploaded successfully`);
+                    setLoading(false);
+                    message.success(`${info.file.response.message}`, [4]);
+
+
 
                 })
 
@@ -91,7 +96,8 @@ const Questions = () => {
 
 
             } else if (info.file.status === 'error') {
-                message.error("Please select exel file!");
+                message.error(`${info.file.response.message}`, [4]);
+
             }
         },
         progress: {
