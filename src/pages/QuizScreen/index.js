@@ -38,7 +38,7 @@ function QuizScreen() {
     const fetchSubjects = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:9090/question/subjects", {
+        const response = await fetch("http://localhost:8080/question/subjects", {
           method: "GET",
           headers: {
             'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ function QuizScreen() {
   const fetchQuestions = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:9090/question/subject/${selectedSubject}/10`, {
+      const response = await fetch(`http://localhost:8080/question/subject/${selectedSubject}/10`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ function QuizScreen() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:9090/exam/get", {
+      const response = await fetch("http://localhost:8080/exam/get", {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
