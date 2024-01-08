@@ -298,7 +298,7 @@ const CreateExam = () => {
             });
 
             if (response.status === 200) {
-                message.success("Exam deleted successfully", [1.5])
+                message.success(`${response.data.message}`, [1.5])
                 await fetchData();
                 setExamData(prevExamData => prevExamData.filter(exam => !idList.includes(exam.id)));
 
@@ -306,10 +306,10 @@ const CreateExam = () => {
                 setSelectAllVisible(false);
 
             } else {
-                message.error('Failed to delete exams:', [1.5], response.statusText);
+                message.error(`${response.data.message}`, [1.5], response.statusText);
             }
         } catch (error) {
-            console.error('Error deleting exams:', error);
+            console.error(`${error.response.data.message}`, error);
         }
     };
 
@@ -333,7 +333,8 @@ const CreateExam = () => {
             });
 
             if (response.status === 200) {
-                message.success('Exam status changed successfully:', [2]);
+                message.success(`${response.data.message}`, [1.5]);
+
                 await fetchData();
                 setSelectedExams([]);
                 setSelectAllVisible(false);
@@ -403,6 +404,7 @@ const CreateExam = () => {
                     Authorization: `Bearer ${jwtToken}`,
                 },
             });
+
 
             if (response.status === 200) {
                 // Successful response
@@ -505,7 +507,6 @@ const CreateExam = () => {
                 ),
             }
             : null,
-        { title: 'Id', dataIndex: 'id', key: 'id' },
         { title: 'Name', dataIndex: 'examName', key: 'examName' },
         { title: 'Sub', dataIndex: 'subject', key: 'subject' },
         {

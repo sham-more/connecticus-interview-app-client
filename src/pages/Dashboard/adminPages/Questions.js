@@ -11,7 +11,7 @@ const Questions = () => {
 
     const fetchTotalQuestions = async () => {
         try {
-            const response = await axios.post('http://localhost:8080/question/all/1/20', {}, {
+            const response = await axios.post('http://localhost:8080/question/all/0/20', {}, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${jwtToken}`,
@@ -112,11 +112,7 @@ const Questions = () => {
     };
 
     const columns = [
-        {
-            title: 'ID',
-            dataIndex: 'id',
-            key: 'id',
-        },
+
         {
             title: 'Question',
             dataIndex: 'question',
