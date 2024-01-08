@@ -6,9 +6,18 @@ import CssBaseline from '@mui/material/CssBaseline';
 import theme from 'assets/theme';
 import { AuthProvider } from 'contex/AuthContext';
 import routes from 'routes';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import PrivateRoute from './Routes/PrivateRoute';
 
+/**
+ * Author: Shyam More
+ * Organization: Connecticus Technologies
+ */
+
 const App = () => {
+
   const { pathname } = useLocation();
 
   useEffect(() => {
@@ -40,11 +49,13 @@ const App = () => {
 
 
 
-          {/* Default route for unauthorized access */}
+          {/* Default route for unauthorized access or we also can redirect to not found page */}
 
-          <Route path="*" element={<Navigate to="/sign-in" />} />
+          <Route path="*" element={<Navigate to="/pagenotfound" />} />
+          <Route path="/" element={<Navigate to="/sign-in" />} />
         </Routes>
       </AuthProvider>
+      <ToastContainer />
     </ThemeProvider>
   );
 };

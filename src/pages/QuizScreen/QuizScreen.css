@@ -113,3 +113,40 @@
     height: 50px;
 
 }
+
+/* Progress Bar */
+
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 5px 10px;
+    padding: 10px;
+}
+
+.question-counter {
+    background-color: #0990ff;
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 15px
+}
+
+/* Timer */
+
+.timer-container {
+    background-color: #e64343;
+    color: white;
+    width: 100px;
+    text-align: center;
+    padding: 5px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 15px
+}
+
+.timer-text {
+    margin: 0;
+}

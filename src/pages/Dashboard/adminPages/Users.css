@@ -1,0 +1,43 @@
+.checkDelete {
+    color: red;
+    border: 1px solid red;
+    height: 30px;
+
+}
+
+.checkDelete:hover {
+    background-color: rgba(255, 0, 0, 0.642) !important;
+    border: 1px solid red;
+    color: white !important;
+}
+
+.toggleForSelect {
+    width: 20px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.deleteInTable {
+    color: rgba(238, 59, 59, 0.689) !important;
+}
+
+.deleteInTable:hover {
+    color: red !important;
+
+}
+
+.checkActivate {
+    color: rgb(20, 155, 60);
+    border: 1px solid rgb(20, 155, 60);
+    height: 30px;
+
+}
+
+.checkActivate:hover {
+    background-color: rgba(13, 174, 62, 0.772) !important;
+    border: rgba(13, 174, 62, 0.772) !important;
+    color: white !important;
+}

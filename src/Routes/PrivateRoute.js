@@ -6,7 +6,7 @@ import { useAuth } from '../contex/AuthContext';
 const PrivateRoute = ({ component: Component, roles, ...rest }) => {
     const { state } = useAuth();
 
-    console.log("User Role :" + state.role);
+
 
     if (!state.token) {
         return <Navigate to="/sign-in" />;
