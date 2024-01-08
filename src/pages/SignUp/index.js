@@ -91,7 +91,7 @@ function SignUp() {
         //Successfully registered
         toast.success('Registration successful!', {
           position: "bottom-left",
-          autoClose: 4000,
+          autoClose: 2000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
