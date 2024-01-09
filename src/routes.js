@@ -7,6 +7,7 @@ import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 import Unauthorized from "./pages/Unauthorized";
 import SignUp from "pages/SignUp";
 import NotFoundPage from "pages/NotFoundPage";
+import ThankYouPage from "pages/ThankYouPage"
 
 const routes = [
   {
@@ -55,6 +56,11 @@ const routes = [
     name: "Not Found",
     route: "/pagenotfound",
     component: NotFoundPage,
+  },
+  {
+    name: "Thank You",
+    route: "/thankyou",
+    component: ThankYouPage,
   },
 ];
 
