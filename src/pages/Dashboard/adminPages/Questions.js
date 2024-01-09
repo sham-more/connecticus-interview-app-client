@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { UploadOutlined, LoadingOutlined } from '@ant-design/icons';
-import { Button, message, Upload, Table, Skeleton } from 'antd';
+import { UploadOutlined, LoadingOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, message, Upload, Table, Skeleton, Popconfirm, Checkbox } from 'antd';
+import ChecklistIcon from '@mui/icons-material/Checklist';
+
 import axios from 'axios';
 
 const Questions = () => {
     const [tableData, setTableData] = useState([]);
     const [totalQuestions, setTotalQuestions] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [selectedQuestions, setSelectedQuestions] = useState([]);
+    const [selectAllVisible, setSelectAllVisible] = useState(false);
+    const [checkboxColumnVisible, setCheckboxColumnVisible] = useState(false);
+    const [isDeleteVisible, setIsDeleteVisible] = useState(false);
     const jwtToken = localStorage.getItem('token');
 
     const fetchTotalQuestions = async () => {
@@ -22,6 +28,42 @@ const Questions = () => {
         } catch (error) {
             console.error('Error fetching total questions:', error);
         }
+    };
+
+
+
+
+    const handleDelete = async (questionsToDelete) => {
+        try {
+            if (!questionsToDelete || questionsToDelete.length === 0) {
+                message.error('No questions selected for deletion.');
+                return;
+            }
+
+
+            const idList = Array.isArray(questionsToDelete) ? questionsToDelete.map(question => question.id) : [questionsToDelete];
+
+            const response = await axios.delete('http://localhost:8080/question/delete', {
+                headers: {
+                    Authorization: `Bearer ${jwtToken}`,
+                },
+                data: {
+                    idList: idList,
+                },
+            });
+
+            if (response.status === 200) {
+                message.success(`${response.data.message}`, [1.5]);
+                await fetchData();
+                setSelectedQuestions([]);
+                setSelectAllVisible(false);
+            } else {
+                message.error(`${response.data.message}`, [1.5]);
+            }
+        } catch (error) {
+            message.error('Error deleting questions', [1.5]);
+        }
+
     };
 
     const fetchData = async () => {
@@ -50,6 +92,11 @@ const Questions = () => {
     };
 
 
+
+
+
+
+
     useEffect(() => {
         const fetchDataOnMount = async () => {
             // Set loading to true initially
@@ -68,6 +115,36 @@ const Questions = () => {
 
         fetchDataOnMount();
     }, [totalQuestions]);
+
+
+
+    const onSelectAllClick = () => {
+        setSelectAllVisible((prevVisible) => checkboxColumnVisible && !prevVisible);
+        setSelectedQuestions((prevSelectedQuestions) =>
+            prevSelectedQuestions.length === tableData.length ? [] : [...tableData]
+        );
+
+    };
+
+    const onQuestionSelectChange = (record) => {
+        setSelectedQuestions((prevSelectedQuestions) => {
+            const isSelected = prevSelectedQuestions.some((question) => question.id === record.id);
+            return isSelected
+                ? prevSelectedQuestions.filter((question) => question.id !== record.id)
+                : [...prevSelectedQuestions, record];
+        });
+    };
+
+    const clearSelectedQuestions = () => {
+        setSelectedQuestions([]);
+    };
+
+    const toggleCheckboxColumn = () => {
+        setCheckboxColumnVisible((prevVisible) => !prevVisible);
+
+        setIsDeleteVisible(!isDeleteVisible);
+        clearSelectedQuestions(); // Clear selected question when toggling checkbox column visibility
+    };
 
 
     const props = {
@@ -113,6 +190,26 @@ const Questions = () => {
 
     const columns = [
 
+        checkboxColumnVisible
+            ? {
+                title: (
+                    <Checkbox
+                        indeterminate={selectedQuestions.length > 0 && selectedQuestions.length < tableData.length}
+                        checked={selectedQuestions.length === tableData.length}
+                        onChange={onSelectAllClick}
+                    />
+                ),
+                key: 'select',
+                render: (_, record) => (
+                    <Checkbox
+                        checked={selectedQuestions.some((question) => question.id === record.id)}
+                        onChange={() => onQuestionSelectChange(record)}
+
+                    />
+                ),
+            }
+            : null,
+
         {
             title: 'Question',
             dataIndex: 'question',
@@ -133,22 +230,67 @@ const Questions = () => {
             dataIndex: 'answer',
             key: 'answer',
         },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: (_, record) => (
+                <span>
+                    <Popconfirm
+                        title="Are you sure you want to delete this question?"
+                        onConfirm={() => handleDelete(record.id)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Button type="link" icon={<DeleteOutlined />} className='deleteInTable' />
+                    </Popconfirm>
+                </span>
+            ),
+        },
     ];
 
     return (
         <div>
-            <div style={{ top: 10, marginBottom: '20px' }}>
+            <div style={{ top: 10, marginBottom: '20px', display: "flex", gap: "10px", alignItems: "center" }}>
                 <Upload className="upload-list-inline"
 
                     {...props} >
                     <Button icon={<UploadOutlined />}>Upload</Button>
                 </Upload>
+
+                <Button className='toggleForSelect' onClick={toggleCheckboxColumn}>
+
+                    <ChecklistIcon />
+
+                </Button>
+
+                {isDeleteVisible && (
+                    <>
+
+                        <Popconfirm
+                            title="Are you sure you want to delete the selected questions?"
+                            onConfirm={() => handleDelete(selectedQuestions)}
+
+                            okText="Yes"
+                            cancelText="No"
+                        >
+                            <Button type="link" icon={<DeleteOutlined />} className='checkDelete'  >
+                                Delete
+                            </Button>
+                        </Popconfirm>
+                    </>
+                )}
+
             </div>
+
+
             {loading ? ( // Renders Skeleton while loading
 
                 <Skeleton active={!tableData.length} />
             ) : (
-                <Table dataSource={tableData} columns={columns} />
+                <Table
+                    dataSource={tableData}
+                    columns={columns.filter(Boolean)}
+                    rowKey="id" />
             )}
         </div>
     );
